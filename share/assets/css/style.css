@@ -1,0 +1,642 @@
+/* INDEX
+----------------------------------------------------------------------------------------
+01. General css
+02. Menu Css
+03. Banner css
+04. Details css
+05. Social Media css
+06. About css
+07. Contact Css
+08. Imgs css
+09. Links css
+-------------------------------------------------------------------------------------- */
+
+@import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap");
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css");
+:root {
+    --theme-font-lato: "Lato", sans-serif;
+    --theme-color-black: #2c2f33;
+    --theme-color-white: #cedbdc;
+    --theme-color-grey: #eeedf2;
+    --theme-color-main: #1d5ba9;
+    --theme-shadow-outer: 6.223021507263184px 6.223021507263184px
+            18.669065475463867px 0px #000000,
+        -6.223021507263184px -6.223021507263184px 18.669065475463867px 0px
+            #3b4451;
+    --theme-shadow-inner: 3.7338130474090576px 3.7338130474090576px
+            6.223021507263184px 0px #000000 inset,
+        -6.223021507263184px -6.223021507263184px 6.223021507263184px 0px
+            #3b4451 inset;
+}
+
+/***************************************************************
+ 	                    01. General css Start		 
+****************************************************************/
+
+body {
+    font-size: 14px;
+    margin: 0px;
+    padding: 0px;
+    color: var(--theme-color-white);
+    font-family: var(--theme-font-lato);
+    background-color: var(--theme-color-black);
+    overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+img {
+    max-width: 100%;
+}
+
+a:hover,
+a {
+    text-decoration: none;
+    outline: 0;
+}
+
+a:focus {
+    text-decoration: none;
+    outline: 0;
+}
+
+::-moz-selection {
+    background: #05cbfc;
+    color: #fff;
+}
+
+::selection {
+    background: #05cbfc;
+    color: #fff;
+}
+
+*,
+::after,
+::before {
+    box-sizing: border-box;
+}
+
+ul {
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+}
+
+button:focus,
+input:focus,
+img:focus,
+.slick-slide:focus,
+textarea:focus,
+input:focus {
+    outline: none;
+}
+
+/***************************************************************
+ 	                    01. General css End		 
+****************************************************************/
+
+/***************************************************************
+ 	                    02. Menu css Start		 
+****************************************************************/
+
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    z-index: 100;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: 4rem;
+    margin: 0 auto;
+}
+
+.menu {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    display: grid;
+    align-content: center;
+    width: 100%;
+    height: 84px;
+    padding: 20px 25px;
+    border-radius: 12.45px;
+    box-shadow: var(--theme-shadow-outer);
+    background-color: var(--theme-color-black);
+}
+
+.menu-list {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.menu-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    outline: none;
+    color: var(--theme-color-white);
+    font-size: 22px;
+    opacity: 0.8;
+}
+
+.menu-link.is-active {
+    position: relative;
+    color: #000000;
+    transition: all 0.35s ease;
+}
+
+.menu-icon {
+    font-size: 1.35rem;
+    line-height: 1;
+    color: inherit;
+}
+
+.menu-name {
+    display: none;
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25;
+    visibility: hidden;
+    text-transform: capitalize;
+}
+
+@media only screen and (min-width: 360px) {
+    .menu-name {
+        display: block;
+        visibility: visible;
+    }
+}
+
+@media only screen and (min-width: 576px) {
+    .menu-list {
+        justify-content: center;
+        column-gap: 3rem;
+    }
+}
+
+.menu .menu-list .menu__btn {
+    width: 113px;
+    height: 44px;
+    background-color: var(--theme-color-black);
+    box-shadow: var(--theme-shadow-outer);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px 10px 21px;
+    border-radius: 10px;
+}
+
+/* .menu .menu-list:hover .menu__btn {
+    box-shadow: var(--theme-shadow-inner);
+} */
+
+.menu .menu-list .menu__btn:hover {
+    box-shadow: var(--theme-shadow-inner);
+}
+
+.menu .menu-list .menu-item i {
+    transition: all 0.075s ease;
+}
+
+.menu .menu-list .menu-item:hover i {
+    color: var(--theme-color-main);
+}
+
+.menu .menu-list .menu__btn p {
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 12px;
+    letter-spacing: 0px;
+    color: var(--theme-color-white);
+}
+
+.menu .menu-list .menu__btn .menu__btn--icon {
+    width: 26px;
+    height: 26px;
+    background: var(--theme-color-main);
+    border-radius: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/***************************************************************
+ 	                    02. Menu css End		 
+****************************************************************/
+
+/***************************************************************
+ 	                    03. Banner css Start		 
+****************************************************************/
+
+.main {
+    padding: 0 25px;
+    position: relative;
+    padding-bottom: 100px;
+}
+
+.banner {
+    position: relative;
+    width: 100%;
+}
+
+.banner::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 110px;
+    background: linear-gradient(
+        360deg,
+        #2c2f33 0%,
+        rgba(44, 47, 51, 0.495142) 50.49%,
+        rgba(44, 47, 51, 0) 100%
+    );
+}
+
+.banner img {
+    width: 100%;
+    position: relative;
+}
+
+/***************************************************************
+ 	                    03. Banner css End		 
+****************************************************************/
+
+/***************************************************************
+ 	                    04. Details css Start		 
+****************************************************************/
+
+.main .details {
+    position: relative;
+    width: 100%;
+    text-align: left;
+}
+
+.main .details h2 {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 24px;
+    letter-spacing: -0.3199999928474426px;
+    margin-bottom: 6px;
+    margin-top: 42px;
+}
+
+.main .details h3 {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 17px;
+    letter-spacing: -0.3199999928474426px;
+    margin-bottom: 6px;
+}
+
+.main .details p {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 21px;
+    letter-spacing: -0.3199999928474426px;
+}
+
+.main .details p span {
+    opacity: 0.5;
+}
+
+/***************************************************************
+ 	                    04. Details css End		 
+****************************************************************/
+
+/***************************************************************
+ 	                    05. Social Media css Start		 
+****************************************************************/
+
+.main .social-media {
+    position: relative;
+    width: 100%;
+    padding: 33px 0 35px;
+}
+
+.main .social-media ul {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.main .social-media ul li a {
+    width: 45px;
+    height: 45px;
+    border-radius: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--theme-shadow-outer);
+}
+
+@media (max-width: 360px) {
+    .main .social-media ul li a {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+.main .social-media ul li a:hover {
+    box-shadow: var(--theme-shadow-inner);
+}
+
+/***************************************************************
+ 	                    05. Social Media css End		 
+****************************************************************/
+
+/***************************************************************
+ 	                    06. About css Start		 
+****************************************************************/
+
+.main .about {
+    position: relative;
+    width: 100%;
+    padding: 10px 9px;
+    border-radius: 5px;
+    box-shadow: var(--theme-shadow-outer);
+}
+
+.main .about h2 {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 21px;
+    letter-spacing: -0.3199999928474426px;
+    margin-bottom: 9px;
+    text-align: center;
+}
+
+.main .about p {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 21px;
+    letter-spacing: -0.3199999928474426px;
+}
+
+/***************************************************************
+ 	                    06. About css End		 
+****************************************************************/
+
+/***************************************************************
+ 	                    07. Contact css Start		 
+****************************************************************/
+
+.main .contact {
+    position: relative;
+    width: 100%;
+    padding: 16px 8px;
+    border-radius: 5px;
+    box-shadow: var(--theme-shadow-outer);
+    margin-top: 35px;
+}
+
+.main .contact h2 {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 21px;
+    letter-spacing: -0.3199999928474426px;
+    display: flex;
+    align-items: center;
+}
+
+.main .contact h2 img {
+    margin-right: 15px;
+}
+
+.contact .contact__inner a.box {
+    width: 100%;
+    border-radius: 5px;
+    box-shadow: var(--theme-shadow-outer);
+    display: flex;
+    align-items: center;
+    color: var(--theme-color-white);
+    padding: 4px 9px;
+    margin-top: 16px;
+}
+
+.contact .contact__inner a.box:hover {
+    box-shadow: var(--theme-shadow-inner);
+}
+
+.contact .contact__inner a.box .icon i {
+    font-size: 22px;
+    opacity: 0.4;
+    color: #000000;
+}
+
+.contact .contact__inner a.box:hover .icon i {
+    opacity: 1;
+    color: var(--theme-color-white);
+    font-size: 18px;
+    width: 25px;
+    height: 25px;
+    border-radius: 25px;
+    background: var(--theme-color-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.contact .contact__inner a.box .text {
+    padding-left: 12px;
+}
+
+.contact .contact__inner a.box .text h3 {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 18px;
+    letter-spacing: -0.3199999928474426px;
+}
+
+.contact .contact__inner a.box .text p {
+    font-size: 10px;
+    font-weight: 300;
+    line-height: 18px;
+    letter-spacing: -0.3199999928474426px;
+}
+
+.contact .contact__inner .box {
+    width: 100%;
+    border-radius: 5px;
+    box-shadow: var(--theme-shadow-outer);
+    display: flex;
+    color: var(--theme-color-white);
+    padding: 4px 9px;
+    margin-top: 16px;
+}
+
+.contact .contact__inner .box .icon i {
+    font-size: 22px;
+    opacity: 0.4;
+    color: #000000;
+}
+
+.contact .contact__inner .box .text {
+    padding-left: 12px;
+}
+
+.contact .contact__inner .box .text h3 {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 18px;
+    letter-spacing: -0.3199999928474426px;
+}
+
+.contact .contact__inner .box .text p {
+    font-size: 10px;
+    font-weight: 300;
+    line-height: 12px;
+    letter-spacing: -0.3199999928474426px;
+}
+
+.contact .contact__inner .box .text .box-btn {
+    color: var(--theme-color-white);
+    font-size: 10px;
+    font-weight: 400;
+    line-height: 15px;
+    letter-spacing: -0.3199999928474426px;
+    padding: 6px 9px;
+    border-radius: 25px;
+    margin-top: 12px;
+    margin-bottom: 10px;
+    display: flex;
+    width: fit-content;
+    box-shadow: var(--theme-shadow-outer);
+}
+
+.contact .contact__inner .box .text .box-btn:hover {
+    box-shadow: var(--theme-shadow-inner);
+}
+
+.contact .contact__inner .box .text .box-btn:hover i {
+    color: var(--theme-color-main);
+}
+
+.contact .contact__inner .box .text .box-btn i {
+    padding-right: 10px;
+    font-size: 13px;
+    color: #000000;
+}
+
+/***************************************************************
+ 	                    07. Contact css End		 
+****************************************************************/
+
+/***************************************************************
+ 	                    08. Imags css Start		 
+****************************************************************/
+
+.main .imgs {
+    position: relative;
+    width: 100%;
+}
+
+.main .imgs img {
+    width: 100%;
+    margin-top: 20px;
+}
+
+/***************************************************************
+ 	                    08. Imags css End		 
+****************************************************************/
+
+/***************************************************************
+ 	                    09. Links css Start		 
+****************************************************************/
+
+.main .links {
+    position: relative;
+    width: 100%;
+    padding: 9px 8px 1px;
+    border-radius: 5px;
+    box-shadow: var(--theme-shadow-outer);
+    margin-top: 20px;
+}
+
+.main .links .title {
+    text-align: center;
+    margin-bottom: 19px;
+}
+
+.main .links .title h2 {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 21px;
+    letter-spacing: -0.3199999928474426px;
+}
+
+.main .links .title p {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 14px;
+    letter-spacing: -0.3199999928474426px;
+    opacity: 0.5;
+}
+
+.main .links .links__inner {
+    border-radius: 5px;
+    box-shadow: var(--theme-shadow-outer);
+    padding: 10px 9px;
+    display: flex;
+    align-items: center;
+    color: var(--theme-color-white);
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.main .links .links__inner::after {
+    content: "\f054";
+    font-family: "Font Awesome 5 Pro";
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 15px;
+    font-size: 16px;
+    color: #000000;
+}
+
+.main .links .links__inner .icon i {
+    font-size: 20px;
+    margin-right: 14px;
+    opacity: 0.5;
+    color: #000000;
+}
+
+.main .links .links__inner .text h2 {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 14px;
+    letter-spacing: -0.3199999928474426px;
+}
+
+.main .links .links__inner .text p {
+    font-size: 10px;
+    font-weight: 300;
+    line-height: 12px;
+    letter-spacing: -0.3199999928474426px;
+}
+
+/***************************************************************
+ 	                    09. Links css End		 
+****************************************************************/
