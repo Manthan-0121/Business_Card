@@ -14,6 +14,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($count > 0) {
         echo "<li class=\"social-icon\" data-id=\"{$id}\"><a id=\"link_{$id}\" href=\"#\" target=\"_blank\" ><img src=\"assets/templates/img/social/{$res['icon']}\" alt=\"\" /></a></li>";
     } else {
-        echo 0;
+        echo $id;
     }
 }

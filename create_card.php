@@ -363,9 +363,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                             Ring Road, Rajkot - 360005<br />
                                             Gujarat, India
                                         </p>
-                                        <a href="#" class="box-btn" id="direction_btn" target="_blank">
-                                            <i class="bi bi-cursor"></i> Direction
-                                        </a>
                                     </div>
                                 </div>
                             </div>

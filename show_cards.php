@@ -51,9 +51,9 @@ include('./includes/header.php');
                                                 echo '<th>Delete</th>';
                                             }
                                             ?>
-                                            <!-- <th>Delete</th> -->
                                             <th>Download</th>
                                             <th>Share</th>
+                                            <th>Show</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -107,24 +107,25 @@ include('./includes/header.php');
                                                     </td>
                                                     <td><?php echo htmlspecialchars($card['bname']); ?></td>
                                                     <td><?php echo htmlspecialchars($card['bcategory']); ?></td>
-                                                    <td><a href="./edit_card.php?token=<?php echo $card['btoken']; ?>" class="btn btn-primary"><i data-feather="edit"></i></a></td>
+                                                    <td><a href="./edit_card.php?token=<?php echo $card['btoken']; ?>" class="btn btn-primary"><i class="fa fa-edit me-2"></i></a></td>
                                                     <?php
                                                     if ($_SESSION['role'] != '1') {
                                                     ?>
                                                         <td><a href="./delete_card.php?token=<?php echo $card['btoken']; ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this card?')"
-                                                                title="Delete"><i data-feather="trash-2"></i></a></td>
+                                                                title="Delete"><i class="fa fa-trash me-2"></i></a></td>
                                                     <?php
                                                     } ?>
-                                                    <td><a href="qr_generate.php?token=<?php echo $card['btoken']; ?>" target="_blank" class="btn btn-icon icon-left btn-info"><i class="fa fa-download me-2"></i> QR</a></td>
+                                                    <td><a href="qr_generate.php?token=<?php echo $card['btoken']; ?>" target="_blank" class="btn btn-icon icon-left btn-info"><i class="fa fa-qrcode me-2"></i></a></td>
                                                     <td>
                                                         <button
                                                             onclick=""
                                                             class="btn btn-icon icon-left btn-warning copy-btn"
                                                             data-id="<?php echo $card['btoken']; ?>"
                                                             title="Copy Share Link">
-                                                            <i class="fa fa-clipboard me-2"></i> Copy
+                                                            <i class="fa fa-clipboard me-2"></i>
                                                         </button>
                                                     </td>
+                                                    <td><a href="<?php echo BASE_URL; ?>share/card.php?token=<?php echo $card['btoken']; ?>" target="_blank" class="btn btn-icon icon-left btn-success"><i class="fa fa-eye me-2"></i></a></td>
                                                 </tr>
                                         <?php
                                             }
