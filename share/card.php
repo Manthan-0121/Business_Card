@@ -173,7 +173,7 @@
 
                     <div class="contact">
                         <h2>
-                            <img src="assets/img/home/Component.png" alt="" /> Contact
+                              Contact
                             Us
                         </h2>
                         <div class="contact__inner">

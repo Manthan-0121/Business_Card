@@ -1,9 +1,222 @@
 <?php
+
 include "./includes/header.php";
 
-if ($_SESSION['role'] == "1") {
-    echo "<script>window.location.href = 'index.php';</script>";
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Handle form submission
+    $name = $_POST['business_name'] ?? '';
+    $about = $_POST['about'] ?? '';
+    $contact = $_POST['business_contact'] ?? '';
+    $email = $_POST['business_email'] ?? '';
+    $category_id = $_POST['business_category'] ?? '';
+
+    // Address Information
+    $address_line1 = $_POST['address_line1'] ?? '';
+    $address_line2 = $_POST['address_line2'] ?? '';
+    $city = $_POST['city'] ?? '';
+    $state = $_POST['state'] ?? '';
+    $country = $_POST['country'] ?? '';
+    $pincode = $_POST['pincode'] ?? '';
+
+    // Process logo upload
+    $logo_path = '';
+    if (!empty($_FILES['logo_input']['name'])) {
+        if (isset($_FILES['logo_input']) && $_FILES['logo_input']['error'] === UPLOAD_ERR_OK) {
+            $logo_tmp_name = $_FILES['logo_input']['tmp_name'];
+            $logo_name = basename($_FILES['logo_input']['name']);
+            $logo_ext = strtolower(pathinfo($logo_name, PATHINFO_EXTENSION));
+            $allowed_ext = ['png', 'jpeg', 'jpg', 'gif'];
+
+            if (in_array($logo_ext, $allowed_ext)) {
+                $logo_new_name = uniqid('logo_', true) . '.' . $logo_ext;
+                $logo_destination = 'assets/img/business_logo/' . $logo_new_name;
+
+                if (move_uploaded_file($logo_tmp_name, $logo_destination)) {
+                    $logo_path = $logo_destination;
+                }
+            }
+        }
+    } else {
+        $logo_path = $_POST['business_logo'] ?? '';
+    }
+
+    // Process slider images
+    $slider_images = [];
+    if (!empty($_FILES['slider_images'])) {
+        foreach ($_FILES['slider_images']['name'] as $key => $name) {
+            if ($_FILES['slider_images']['error'][$key] === UPLOAD_ERR_OK) {
+                $tmp_name = $_FILES['slider_images']['tmp_name'][$key];
+                $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                $allowed_ext = ['png', 'jpeg', 'jpg', 'gif'];
+
+                if (in_array($ext, $allowed_ext)) {
+                    $new_name = uniqid('slider_', true) . '.' . $ext;
+                    $destination = 'assets/img/slider_img/' . $new_name;
+
+                    if (move_uploaded_file($tmp_name, $destination)) {
+                        $slider_images[] = $destination;
+                    }
+                }
+            }
+        }
+    }
+
+    // Process social links
+    $social_links = [];
+    if (!empty($_POST['platform_ids'])) {
+        foreach ($_POST['platform_ids'] as $key => $platform_id) {
+            if (!empty($platform_id)) {
+                $social_links[] = [
+                    'platform_id' => $platform_id,
+                    'url' => $_POST['platform_links'][$platform_id] ?? ''
+                ];
+            }
+        }
+    }
+
+    // other links
+    $other_links = [];
+    if (!empty($_POST['other_links'])) {
+        foreach ($_POST['other_links'] as $link) {
+            $other_links[] = [
+                'title' => $link['title'] ?? '',
+                'sub_title' => $link['subtitle'] ?? '',
+                'url' => $link['url']
+            ];
+        }
+    }
+
+    // update query
+    $update_sql_tbl_business_info = "
+    UPDATE tbl_business_info 
+    SET 
+        `name` = :name,
+        `business_category_id` = :business_category_id,
+        `description` = :description,
+        `logo` = :logo,
+        `contact_no` = :contact_no,
+        `email` = :email,
+        `address_line_1` = :address_line_1,
+        `address_line_2` = :address_line_2,
+        `city` = :city,
+        `state` = :state,
+        `zip` = :zip,
+        `country` = :country
+    WHERE id = :business_id AND link_token = :token
+    ";
+
+    $update_sql_tbl_business_info_stmt = $conn->prepare($update_sql_tbl_business_info);
+    $update_sql_tbl_business_info_stmt->bindParam(':name', $name, PDO::PARAM_STR);
+    $update_sql_tbl_business_info_stmt->bindParam(':business_category_id', $category_id, PDO::PARAM_INT);
+    $update_sql_tbl_business_info_stmt->bindParam(':description', $about, PDO::PARAM_STR);
+    $update_sql_tbl_business_info_stmt->bindParam(':logo', $logo_path, PDO::PARAM_STR);
+    $update_sql_tbl_business_info_stmt->bindParam(':contact_no', $contact, PDO::PARAM_STR);
+    $update_sql_tbl_business_info_stmt->bindParam(':email', $email, PDO::PARAM_STR);
+    $update_sql_tbl_business_info_stmt->bindParam(':address_line_1', $address_line1, PDO::PARAM_STR);
+    $update_sql_tbl_business_info_stmt->bindParam(':address_line_2', $address_line2, PDO::PARAM_STR);
+    $update_sql_tbl_business_info_stmt->bindParam(':city', $city, PDO::PARAM_STR);
+    $update_sql_tbl_business_info_stmt->bindParam(':state', $state, PDO::PARAM_STR);
+    $update_sql_tbl_business_info_stmt->bindParam(':zip', $pincode, PDO::PARAM_STR);
+    $update_sql_tbl_business_info_stmt->bindParam(':country', $country, PDO::PARAM_STR);
+    $update_sql_tbl_business_info_stmt->bindParam(':business_id', $_POST['business_id'], PDO::PARAM_INT);
+    $update_sql_tbl_business_info_stmt->bindParam(':token', $_POST['token'], PDO::PARAM_STR);
+
+    if ($update_sql_tbl_business_info_stmt->execute()) {
+
+        //update social links
+        $chk_social_sql = "SELECT social_category_id FROM tbl_social_links WHERE business_info_id = ?";
+        $chk_social_stmt = $conn->prepare($chk_social_sql);
+        $chk_social_stmt->bindParam(1, $_POST['business_id'], PDO::PARAM_INT);
+        $chk_social_stmt->execute();
+        $existing_social_links = $chk_social_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
+        // Extract just the IDs for comparison
+        $existing_ids = array_column($existing_social_links, 'social_category_id');
+        $new_ids = array_column($social_links, 'platform_id');
+
+        // print_r($existing_ids);
+        // echo "<br>";
+        // echo "<br>";
+        // echo "<br>";
+        // print_r($new_ids);
+        // Condition 1: Update existing links (present in both)
+        foreach ($social_links as $link) {
+            if (in_array($link['platform_id'], $existing_ids)) {
+                $update_sql = "UPDATE tbl_social_links 
+                           SET link = :url 
+                           WHERE business_info_id = :business_id 
+                           AND social_category_id = :platform_id";
+                $update_stmt = $conn->prepare($update_sql);
+                $update_stmt->bindParam(':url', $link['url'], PDO::PARAM_STR);
+                $update_stmt->bindParam(':business_id', $_POST['business_id'], PDO::PARAM_INT);
+                $update_stmt->bindParam(':platform_id', $link['platform_id'], PDO::PARAM_INT);
+                $update_stmt->execute();
+            }
+        }
+
+        // Condition 2: Delete removed links (present in existing but not in new)
+        $ids_to_delete = array_diff($existing_ids, $new_ids);
+        foreach ($ids_to_delete as $id) {
+            $delete_sql = "DELETE FROM tbl_social_links 
+                  WHERE business_info_id = ? 
+                  AND social_category_id = ?";
+            $delete_stmt = $conn->prepare($delete_sql);
+            $delete_stmt->execute([$_POST['business_id'], $id]);
+        }
+
+        // Condition 3: Add new links (present in new but not in existing)
+        $ids_to_add = array_diff($new_ids, $existing_ids);
+        foreach ($social_links as $link) {
+            if (in_array($link['platform_id'], $ids_to_add)) {
+                $insert_sql = "INSERT INTO tbl_social_links 
+                          (business_info_id, social_category_id, link) 
+                          VALUES (:business_id, :platform_id, :url)";
+                $insert_stmt = $conn->prepare($insert_sql);
+                $insert_stmt->bindParam(':business_id', $_POST['business_id'], PDO::PARAM_INT);
+                $insert_stmt->bindParam(':platform_id', $link['platform_id'], PDO::PARAM_INT);
+                $insert_stmt->bindParam(':url', $link['url'], PDO::PARAM_STR);
+                $insert_stmt->execute();
+            }
+        }
+
+        // slider image
+        $existing_slider_sql = "SELECT id, image FROM tbl_media WHERE business_info_id = ?";
+        $existing_slider_stmt = $conn->prepare($existing_slider_sql);
+        $existing_slider_stmt->execute([$_POST['business_id']]);
+        $existing_images = $existing_slider_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $keep_ids = [];
+        if (!empty($_POST['keep_sliders'])) {
+            $keep_ids = array_map('intval', $_POST['keep_sliders']);
+        }
+
+        // 4. Delete removed images (not in keep list)
+        $delete_sql = "DELETE FROM tbl_media WHERE business_info_id = ?";
+        $delete_params = [$_POST['business_id']];
+
+        if (!empty($keep_ids)) {
+            $placeholders = implode(',', array_fill(0, count($keep_ids), '?'));
+            $delete_sql .= " AND id NOT IN ($placeholders)";
+            $delete_params = array_merge($delete_params, $keep_ids);
+        }
+
+        $delete_stmt = $conn->prepare($delete_sql);
+        $delete_stmt->execute($delete_params);
+
+        // 5. Insert new images
+        foreach ($uploaded_images as $image) {
+            $insert_sql = "INSERT INTO tbl_media 
+                      (business_info_id, image, created_at) 
+                      VALUES (?, ?, NOW())";
+            $insert_stmt = $conn->prepare($insert_sql);
+            $insert_stmt->execute([$_POST['business_id'], $image]);
+        }
+
+        echo "<script>alert('Slider images updated successfully!');</script>";
+    }
 }
+
 ?>
 <?php
 if (isset($_GET['token'])) {
@@ -56,6 +269,9 @@ if (isset($_GET['token'])) {
                     <div class="row">
                         <div class="col-4">
                             <form method="post" id="business_card_form" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" enctype="multipart/form-data">
+                                <input type="hidden" name="business_logo" value="<?php echo htmlspecialchars($full_res['business_logo']); ?>">
+                                <input type="hidden" name="business_id" value="<?php echo $business_id; ?>">
+                                <input type="hidden" name="token" value="<?php echo htmlspecialchars($token); ?>">
                                 <div class="card">
                                     <div class="card-header">
                                         <h4>Create Business Card</h4>
@@ -128,7 +344,7 @@ if (isset($_GET['token'])) {
                                                                 </div>
                                                             </div>
                                                     <?php
-                                                        $social_link_ids[] = $social_res['sc_id'];
+                                                            $social_link_ids[] = $social_res['sc_id'];
                                                         }
                                                     }
                                                     ?>
@@ -156,14 +372,76 @@ if (isset($_GET['token'])) {
 
                                         <label>Other Images</label>
                                         <div class="form-group" id="image_container">
+                                            <?php
+                                            $slider_img_sel = "SELECT * FROM tbl_media WHERE business_info_id = $business_id";
+                                            $slider_img_stmt = $conn->prepare($slider_img_sel);
+                                            $slider_img_stmt->execute();
+                                            if ($slider_img_stmt->rowCount() > 0) {
+                                                $id = 0;
+                                                while ($img_res = $slider_img_stmt->fetch(PDO::FETCH_ASSOC)) {
+                                            ?>
+                                                    <div class="input-group mb-2">
+                                                        <input type="hidden" name="other_images_text[]" value="<?php echo $img_res['image']; ?>" readonly class="form-control image-input" accept="image/*">
+                                                        <img src="<?php echo BASE_URL . "assets/img/business_other/" . $img_res['image'] ?>" alt="Image <?php echo $id + 1; ?>" class="img-thumbnail" style="width: 100px; height: 100px;">
+                                                        <button type="button" class="btn btn-danger" onclick="removeInput(this)">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+                                            <?php
+                                                    $id++;
+                                                }
+                                            }
+                                            ?>
                                         </div>
-
                                         <button type="button" class="btn btn-primary" onclick="addImageInput()"><i class="bi bi-plus"></i></button>
-
                                         <hr>
                                         <!-- Input Form Section -->
                                         <label>Web Links</label>
                                         <div class="form-group" id="webLinksContainer">
+
+                                            <?php
+                                            $sel_other_links_sql = "SELECT * FROM tbl_other_links WHERE business_info_id = ?";
+                                            $sel_other_links_stmt = $conn->prepare($sel_other_links_sql);
+                                            $sel_other_links_stmt->bindParam(1, $business_id, PDO::PARAM_INT);
+                                            $sel_other_links_stmt->execute();
+                                            $linkCounter = 0;
+                                            while ($link_res = $sel_other_links_stmt->fetch(PDO::FETCH_ASSOC)) {
+                                                $linkCounter++;
+                                                $linkId = "link_$linkCounter";
+                                                $dbId = $link_res['id'];
+                                                $title = $link_res['link_title'];
+                                                $subtitle = $link_res['link_sub_title'];
+                                                $url = $link_res['link'];
+                                            ?>
+                                                <div class="mb-3 link-group" id="<?php echo $linkId; ?>" data-db-id="<?php echo $dbId; ?>">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <label>Link <?php echo $linkCounter; ?></label>
+                                                        <button type="button" class="btn btn-sm btn-danger" onclick="removeLink('<?php echo $linkId; ?>')">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                    <input type="text" class="form-control mb-1 link-title"
+                                                        name="other_links[<?php echo $linkCounter; ?>][title]"
+                                                        placeholder="Title"
+                                                        value="<?php echo htmlspecialchars($title); ?>"
+                                                        oninput="updateLinksPreview()">
+                                                    <input type="text" class="form-control mb-1 link-subtitle"
+                                                        name="other_links[<?php echo $linkCounter; ?>][subtitle]"
+                                                        placeholder="Sub-title"
+                                                        value="<?php echo htmlspecialchars($subtitle); ?>"
+                                                        oninput="updateLinksPreview()">
+                                                    <input type="url" class="form-control link-url"
+                                                        name="other_links[<?php echo $linkCounter; ?>][url]"
+                                                        placeholder="http://example.com"
+                                                        value="<?php echo htmlspecialchars($url); ?>"
+                                                        oninput="updateLinksPreview()">
+                                                    <?php if ($dbId): ?>
+                                                        <input type="hidden" name="existing_links[]" value="<?php echo $dbId; ?>">
+                                                    <?php endif; ?>
+                                                </div>
+                                            <?php
+                                            }
+                                            ?>
                                             <!-- Dynamic links will be added here -->
                                         </div>
                                         <button type="button" class="btn btn-primary mt-2" onclick="addWebLink()">
@@ -237,7 +515,7 @@ if (isset($_GET['token'])) {
 
                                 <div class="contact">
                                     <h2>
-                                        <img src="assets/img/home/Component.png" alt="" /> Contact
+                                        Contact
                                         Us
                                     </h2>
                                     <div class="contact__inner">
@@ -248,11 +526,11 @@ if (isset($_GET['token'])) {
                                                 <p id="business_contact_r">+ 9876543211</p>
                                             </div>
                                         </a>
-                                        <a href="mailto:contactme@domain.com" class="box" id="business_email_r_link">
+                                        <a href="mailto:<?php echo htmlspecialchars($full_res['business_email']) ?>" class="box" id="business_email_r_link">
                                             <div class="icon"><i class="bi bi-envelope"></i></div>
                                             <div class="text">
                                                 <h3>E-mail</h3>
-                                                <p id="business_email_r">contactme@domain.com</p>
+                                                <p id="business_email_r"><?php echo htmlspecialchars($full_res['business_email']) ?></p>
                                             </div>
                                         </a>
                                         <div class="box">
@@ -260,26 +538,34 @@ if (isset($_GET['token'])) {
                                             <div class="text">
                                                 <h3>Address</h3>
                                                 <p id="full_address">
-                                                    738, R.K. World Tower,<br />
-                                                    Ring Road, Rajkot - 360005<br />
-                                                    Gujarat, India
+                                                    <?php echo htmlspecialchars($full_res['business_address1']) ?><br />
+                                                    <?php if (!empty($full_res['business_address2'])) echo htmlspecialchars($full_res['business_address2']) . "<br />" ?>
+                                                    <?php echo htmlspecialchars($full_res['business_city']) ?> - <?php echo htmlspecialchars($full_res['business_zip']) ?><br />
+                                                    <?php echo htmlspecialchars($full_res['business_state']) ?>, <?php echo htmlspecialchars($full_res['business_country']) ?>
                                                 </p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div id="carouselExampleIndicators3" class="carousel slide text-center" data-ride="carousel">
+                                <div id="carouselExampleIndicators3" class="carousel slide text-center mt-3" data-ride="carousel">
                                     <div class="carousel-inner ">
-                                        <div class="carousel-item active">
-                                            <img class="d-block w-75 mlc" src="assets/templates/img/slider/img1.png" alt="First slide">
-                                        </div>
-                                        <div class="carousel-item">
-                                            <img class="d-block w-75 mlc" src="assets/templates/img/slider/img2.png" alt="Second slide">
-                                        </div>
-                                        <div class="carousel-item">
-                                            <img class="d-block w-75 mlc" src="assets/templates/img/slider/img3.png" alt="Third slide">
-                                        </div>
+                                        <?php
+                                        $slider_img_sel = "SELECT * FROM tbl_media WHERE business_info_id = $business_id";
+                                        $slider_img_stmt = $conn->prepare($slider_img_sel);
+                                        $slider_img_stmt->execute();
+                                        if ($slider_img_stmt->rowCount() > 0) {
+                                            $id = 0;
+                                            while ($img_res = $slider_img_stmt->fetch(PDO::FETCH_ASSOC)) {
+                                        ?>
+                                                <div class="carousel-item <?php echo ($id == 0) ? 'active' : ''; ?>">
+                                                    <img class="d-block w-75 mlc" src="<?php echo BASE_URL . "assets/img/business_other/" . $img_res['image'] ?>" alt="<?php echo $img_res['image'] ?>">
+                                                </div>
+                                        <?php
+                                                $id++;
+                                            }
+                                        }
+                                        ?>
                                     </div>
                                     <a class="carousel-control-prev" href="#carouselExampleIndicators3" role="button"
                                         data-slide="prev">
@@ -319,13 +605,13 @@ if (isset($_GET['token'])) {
 
         <script src="assets/js/preview.js"></script>
 
-        <script src="assets/js/business_card.js"></script>
+        <script src="assets/js/business_card copy.js"></script>
 <?php
     } else {
-        echo "<script>window.location.href = 'index.php';</script>";
+        // echo "<script>window.location.href = 'index.php';</script>";
     }
 } else {
-    echo "<script>window.location.href = 'index.php';</script>";
+    // echo "<script>window.location.href = 'index.php';</script>";
 }
 ?>
 <?php

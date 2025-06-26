@@ -84,10 +84,21 @@ $(document).ready(function () {
 
 
 // other image and slider functionality
-let imageInputCounter = 0;
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Initialize carousel with existing images
+    updateCarousel();
+
+    // Add event delegation for file input changes
+    document.getElementById('image_container').addEventListener('change', function (e) {
+        if (e.target.matches('input[type="file"]')) {
+            updateCarousel();
+        }
+    });
+});
 
 function addImageInput() {
-    let inputHtml = `
+    const inputHtml = `
     <div class="input-group mb-2">
         <input type="file" name="other_images[]" class="form-control image-input" accept="image/*">
         <button type="button" class="btn btn-danger" onclick="removeInput(this)">
@@ -99,139 +110,175 @@ function addImageInput() {
 
 function removeInput(button) {
     const inputGroup = button.closest('.input-group');
+    const input = inputGroup.querySelector('input');
+
+    // If it's a DB-stored image (text input), add a hidden field to track deletion
+    if (input.type === 'text') {
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'deleted_images[]';
+        hiddenInput.value = input.value;
+        document.getElementById('image_container').appendChild(hiddenInput);
+    }
+
     inputGroup.remove();
     updateCarousel();
 }
 
 function updateCarousel() {
     const carouselInner = document.querySelector('#carouselExampleIndicators3 .carousel-inner');
-    const inputs = document.querySelectorAll('#image_container input.image-input');
-    const selectedFiles = Array.from(inputs).filter(input => input.files && input.files.length > 0);
+    carouselInner.innerHTML = '';
 
-    if (selectedFiles.length > 0) {
-        // Clear existing carousel items
-        carouselInner.innerHTML = '';
+    // 1. Add existing DB images (from text inputs)
+    const dbImages = document.querySelectorAll('input[name="other_images_text[]"]');
+    dbImages.forEach((input, index) => {
+        if (input.value) {
+            const isActive = index === 0 ? 'active' : '';
+            carouselInner.innerHTML += `
+                <div class="carousel-item ${isActive}">
+                    <img class="d-block w-75 mlc" src="assets/img/business_other/${input.value}" alt="DB Image">
+                </div>
+            `;
+        }
+    });
 
-        // Add new items from selected files
-        selectedFiles.forEach((input, index) => {
+    // 2. Add newly uploaded files (from file inputs)
+    const fileInputs = document.querySelectorAll('input[name="other_images[]"]');
+    fileInputs.forEach((input, index) => {
+        if (input.files && input.files[0]) {
             const reader = new FileReader();
-            reader.onload = function (event) {
-                const isActive = index === 0 ? 'active' : '';
-                const carouselItem = `
+            reader.onload = function (e) {
+                const isActive = dbImages.length === 0 && index === 0 ? 'active' : '';
+                carouselInner.innerHTML += `
                     <div class="carousel-item ${isActive}">
-                        <img class="d-block w-75 mlc" src="${event.target.result}" alt="Selected image ${index + 1}">
-                    </div>`;
-                carouselInner.insertAdjacentHTML('beforeend', carouselItem);
-
-                // Initialize/reinitialize carousel after first image is added
-                if (index === 0) {
+                        <img class="d-block w-75 mlc" src="${e.target.result}" alt="New Image">
+                    </div>
+                `;
+                // Refresh carousel if first image
+                if (carouselInner.querySelectorAll('.carousel-item').length === 1) {
                     $('#carouselExampleIndicators3').carousel();
                 }
             };
             reader.readAsDataURL(input.files[0]);
-        });
-    } else {
-        // Restore original slider images when no files are selected
+        }
+    });
+
+    // If no images, show a placeholder
+    if (dbImages.length === 0 && fileInputs.length === 0) {
         carouselInner.innerHTML = `
             <div class="carousel-item active">
-                <img class="d-block w-75 mlc" src="assets/templates/img/slider/img1.png" alt="First slide">
+                <img class="d-block w-75 mlc" src="assets/templates/img/slider/img1.png" alt="No Images">
             </div>
-            <div class="carousel-item">
-                <img class="d-block w-75 mlc" src="assets/templates/img/slider/img2.png" alt="Second slide">
-            </div>
-            <div class="carousel-item">
-                <img class="d-block w-75 mlc" src="assets/templates/img/slider/img3.png" alt="Third slide">
-            </div>`;
-        $('#carouselExampleIndicators3').carousel();
+        `;
     }
-}
 
-// Event listener for file inputs
-document.getElementById('image_container').addEventListener('change', function (e) {
-    if (e.target && e.target.matches('input.image-input[type="file"]')) {
-        updateCarousel();
-    }
-});
-
-// Initialize carousel with original images on page load
-document.addEventListener('DOMContentLoaded', function () {
+    // Reinitialize Bootstrap carousel
     $('#carouselExampleIndicators3').carousel();
-});
-
+}
 
 
 
 // other web links functionality
-
-
+// ================= WEB LINKS MANAGEMENT =================
 let linkCounter = 0;
 
-// Function to add new link fields
-function addWebLink(title = '', subtitle = '', url = '') {
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function () {
+    updateLinksPreview();
+});
+
+
+// Add new link field (with optional existing DB values)
+function addWebLink(title = '', subtitle = '', url = '', dbId = '') {
     linkCounter++;
     const linkId = 'link_' + linkCounter;
 
     const linkHtml = `
-    <div class="mb-3 link-group" id="${linkId}">
+    <div class="mb-3 link-group" id="${linkId}" data-db-id="${dbId}">
         <div class="d-flex justify-content-between align-items-center">
             <label>Link ${linkCounter}</label>
             <button type="button" class="btn btn-sm btn-danger" onclick="removeLink('${linkId}')">
                 <i class="bi bi-trash"></i>
             </button>
         </div>
-        <input type="text" class="form-control mb-1 link-title" name="other_links[${linkCounter}][title]" placeholder="Title" value="${title}" oninput="updatePreview()">
-        <input type="text" class="form-control mb-1 link-subtitle" name="other_links[${linkCounter}][subtitle]" placeholder="Sub-title" value="${subtitle}" oninput="updatePreview()">
-        <input type="url" class="form-control link-url" name="other_links[${linkCounter}][url]" placeholder="http://example.com" value="${url}" oninput="updatePreview()">
+        <input type="text" class="form-control mb-1 link-title" 
+               name="other_links[${linkCounter}][title]" 
+               placeholder="Title" 
+               value="${escapeHtml(title)}" 
+               oninput="updateLinksPreview()">
+        <input type="text" class="form-control mb-1 link-subtitle" 
+               name="other_links[${linkCounter}][subtitle]" 
+               placeholder="Sub-title" 
+               value="${escapeHtml(subtitle)}" 
+               oninput="updateLinksPreview()">
+        <input type="url" class="form-control link-url" 
+               name="other_links[${linkCounter}][url]" 
+               placeholder="http://example.com" 
+               value="${escapeHtml(url)}" 
+               oninput="updateLinksPreview()">
+        ${dbId ? `<input type="hidden" name="existing_links[]" value="${dbId}">` : ''}
     </div>`;
 
     document.getElementById('webLinksContainer').insertAdjacentHTML('beforeend', linkHtml);
-    updatePreview();
+    updateLinksPreview();
 }
 
-// Function to remove a link
+// Remove a link field
 function removeLink(id) {
-    document.getElementById(id).remove();
-    // Renumber remaining links
+    const linkGroup = document.getElementById(id);
+    if (linkGroup.dataset.dbId) {
+        const deleteInput = `<input type="hidden" name="deleted_links[]" value="${linkGroup.dataset.dbId}">`;
+        document.getElementById('webLinksContainer').insertAdjacentHTML('beforeend', deleteInput);
+    }
+    linkGroup.remove();
+    renumberLinks();
+    updateLinksPreview();
+}
+
+// Renumber links sequentially after deletion
+function renumberLinks() {
     const labels = document.querySelectorAll('#webLinksContainer label');
     labels.forEach((label, index) => {
         label.textContent = `Link ${index + 1}`;
     });
     linkCounter = labels.length;
-    updatePreview();
 }
 
-// Function to update the live preview
-function updatePreview() {
+// Update the live preview section
+function updateLinksPreview() {
     const previewContainer = document.getElementById('linksPreview');
-    // Clear existing dynamic links but keep the title section
-    const existingLinks = previewContainer.querySelectorAll('.links__inner');
-    existingLinks.forEach(link => link.remove());
 
-    const linkGroups = document.querySelectorAll('.link-group');
+    // Clear only dynamically generated previews
+    const dynamicPreviews = previewContainer.querySelectorAll('.dynamic-preview');
+    dynamicPreviews.forEach(preview => preview.remove());
 
-    linkGroups.forEach(group => {
+    // Add updated previews for each link
+    document.querySelectorAll('.link-group').forEach(group => {
         const title = group.querySelector('.link-title').value || 'Title';
         const subtitle = group.querySelector('.link-subtitle').value || 'Sub-title';
         const url = group.querySelector('.link-url').value || '#';
 
         const linkHtml = `
-        <a href="${url}" class="links__inner">
+        <a href="${escapeHtml(url)}" class="links__inner dynamic-preview" target="_blank">
             <div class="icon">
                 <i class="far fa-link"></i>
             </div>
             <div class="text">
-                <h2>${title}</h2>
-                <p>${subtitle}</p>
+                <h2>${escapeHtml(title)}</h2>
+                <p>${escapeHtml(subtitle)}</p>
             </div>
         </a>`;
 
-        // Insert after the title div
-        const titleDiv = previewContainer.querySelector('.title');
-        titleDiv.insertAdjacentHTML('afterend', linkHtml);
+        previewContainer.insertAdjacentHTML('beforeend', linkHtml);
     });
 }
 
-// Initialize with empty state
-document.addEventListener('DOMContentLoaded', function () {
-    updatePreview();
-});
+// Helper function to prevent XSS
+function escapeHtml(unsafe) {
+    return unsafe.toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
