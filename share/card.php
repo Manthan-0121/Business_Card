@@ -1,8 +1,12 @@
     <?php
     include '../includes/config.php';
+    session_start();
     if (isset($_GET['token']) && !empty($_GET['token'])) {
         $token = $_GET['token'];
-        $query = "SELECT id FROM `tbl_business_info` WHERE `link_token` = ? AND `status` = '1'";
+        $query = "SELECT id FROM `tbl_business_info` WHERE `link_token` = ?";
+        if (isset($_SESSION['uid']) == null && isset($_SESSION['role']) == null) {
+            $query .= " AND `status` = 1";
+        }
         $stmt = $conn->prepare($query);
         $stmt->bindParam(1, $token, PDO::PARAM_STR);
         $stmt->execute();
@@ -173,7 +177,7 @@
 
                     <div class="contact">
                         <h2>
-                              Contact
+                            Contact
                             Us
                         </h2>
                         <div class="contact__inner">
@@ -393,7 +397,7 @@
                             if (e.target.closest('.copy-btn')) {
                                 const button = e.target.closest('.copy-btn');
                                 const token = button.getAttribute('data-id');
-                                const shareUrl = window.location.href ;
+                                const shareUrl = window.location.href;
 
                                 navigator.clipboard.writeText(shareUrl)
                                     .then(() => {

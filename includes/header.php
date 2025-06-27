@@ -29,7 +29,7 @@ $row_res = $stmt->fetch(PDO::FETCH_ASSOC);
     <link rel='shortcut icon' type='image/x-icon' href='assets/img/favicon.ico' />
 
     <!-- <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"> -->
-     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 
 
 </head>
@@ -55,12 +55,8 @@ $row_res = $stmt->fetch(PDO::FETCH_ASSOC);
                                 class="user-img-radious-style"> <span class="d-sm-none d-lg-inline-block"></span></a>
                         <div class="dropdown-menu dropdown-menu-right pullDown">
                             <div class="dropdown-title">Hello <?php echo $row_res['first_name']; ?></div>
-                            <a href="profile.html" class="dropdown-item has-icon"> <i class="far
+                            <a href="profile.php" class="dropdown-item has-icon"> <i class="far
 										fa-user"></i> Profile
-                            </a> <a href="timeline.html" class="dropdown-item has-icon"> <i class="fas fa-bolt"></i>
-                                Activities
-                            </a> <a href="#" class="dropdown-item has-icon"> <i class="fas fa-cog"></i>
-                                Settings
                             </a>
                             <div class="dropdown-divider"></div>
                             <a href="logout.php" class="dropdown-item has-icon text-danger"> <i class="fas fa-sign-out-alt"></i>

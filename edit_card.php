@@ -4,7 +4,7 @@ include "./includes/header.php";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Handle form submission
-    $name = $_POST['business_name'] ?? '';
+    $business_name = $_POST['business_name'] ?? '';
     $about = $_POST['about'] ?? '';
     $contact = $_POST['business_contact'] ?? '';
     $email = $_POST['business_email'] ?? '';
@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Process slider images
     $slider_images = [];
-    if (!empty($_FILES['slider_images'])) {
+    if (!empty(isset($_FILES['slider_images']))) {
         foreach ($_FILES['slider_images']['name'] as $key => $name) {
             if ($_FILES['slider_images']['error'][$key] === UPLOAD_ERR_OK) {
                 $tmp_name = $_FILES['slider_images']['tmp_name'][$key];
@@ -51,10 +51,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if (in_array($ext, $allowed_ext)) {
                     $new_name = uniqid('slider_', true) . '.' . $ext;
-                    $destination = 'assets/img/slider_img/' . $new_name;
+                    $destination = 'assets/img/business_other/' . $new_name;
 
                     if (move_uploaded_file($tmp_name, $destination)) {
-                        $slider_images[] = $destination;
+                        $slider_images[] = $new_name;
                     }
                 }
             }
@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ";
 
     $update_sql_tbl_business_info_stmt = $conn->prepare($update_sql_tbl_business_info);
-    $update_sql_tbl_business_info_stmt->bindParam(':name', $name, PDO::PARAM_STR);
+    $update_sql_tbl_business_info_stmt->bindParam(':name', $business_name, PDO::PARAM_STR);
     $update_sql_tbl_business_info_stmt->bindParam(':business_category_id', $category_id, PDO::PARAM_INT);
     $update_sql_tbl_business_info_stmt->bindParam(':description', $about, PDO::PARAM_STR);
     $update_sql_tbl_business_info_stmt->bindParam(':logo', $logo_path, PDO::PARAM_STR);
@@ -135,11 +135,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $existing_ids = array_column($existing_social_links, 'social_category_id');
         $new_ids = array_column($social_links, 'platform_id');
 
-        // print_r($existing_ids);
-        // echo "<br>";
-        // echo "<br>";
-        // echo "<br>";
-        // print_r($new_ids);
         // Condition 1: Update existing links (present in both)
         foreach ($social_links as $link) {
             if (in_array($link['platform_id'], $existing_ids)) {
@@ -169,8 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $ids_to_add = array_diff($new_ids, $existing_ids);
         foreach ($social_links as $link) {
             if (in_array($link['platform_id'], $ids_to_add)) {
-                $insert_sql = "INSERT INTO tbl_social_links 
-                          (business_info_id, social_category_id, link) 
+                $insert_sql = "INSERT INTO tbl_social_links (business_info_id, social_category_id, link) 
                           VALUES (:business_id, :platform_id, :url)";
                 $insert_stmt = $conn->prepare($insert_sql);
                 $insert_stmt->bindParam(':business_id', $_POST['business_id'], PDO::PARAM_INT);
@@ -186,34 +180,88 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $existing_slider_stmt->execute([$_POST['business_id']]);
         $existing_images = $existing_slider_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $keep_ids = [];
-        if (!empty($_POST['keep_sliders'])) {
-            $keep_ids = array_map('intval', $_POST['keep_sliders']);
+        $existing_img_ids = array_column($existing_images, 'id');
+        $keep_image_ids = $_POST['other_images_ids'] ?? [];
+
+        // Condition 2: Delete removed images (present in existing but not in new)
+        $ids_to_delete = array_diff($existing_img_ids, $keep_image_ids);
+        foreach ($ids_to_delete as $id) {
+            $delete_sql = "DELETE FROM tbl_media WHERE business_info_id = ? AND id = ?";
+            $delete_stmt = $conn->prepare($delete_sql);
+            $delete_stmt->execute([$_POST['business_id'], $id]);
         }
 
-        // 4. Delete removed images (not in keep list)
-        $delete_sql = "DELETE FROM tbl_media WHERE business_info_id = ?";
-        $delete_params = [$_POST['business_id']];
-
-        if (!empty($keep_ids)) {
-            $placeholders = implode(',', array_fill(0, count($keep_ids), '?'));
-            $delete_sql .= " AND id NOT IN ($placeholders)";
-            $delete_params = array_merge($delete_params, $keep_ids);
-        }
-
-        $delete_stmt = $conn->prepare($delete_sql);
-        $delete_stmt->execute($delete_params);
-
-        // 5. Insert new images
-        foreach ($uploaded_images as $image) {
-            $insert_sql = "INSERT INTO tbl_media 
-                      (business_info_id, image, created_at) 
-                      VALUES (?, ?, NOW())";
+        foreach ($slider_images as $slider_img) {
+            $insert_sql = "INSERT INTO tbl_media (business_info_id, image) VALUES (:business_id, :image)";
             $insert_stmt = $conn->prepare($insert_sql);
-            $insert_stmt->execute([$_POST['business_id'], $image]);
+            $insert_stmt->bindParam(':business_id', $_POST['business_id'], PDO::PARAM_INT);
+            $insert_stmt->bindParam(':image', $slider_img, PDO::PARAM_STR);
+            $insert_stmt->execute();
         }
 
-        echo "<script>alert('Slider images updated successfully!');</script>";
+
+        $existing_links = [];
+        $new_links = [];
+
+        foreach ($_POST['other_links'] as $link) {
+            if (isset($link['link_id'])) {
+                $existing_links[] = [
+                    'id' => $link['link_id'],
+                    'title' => $link['title'],
+                    'subtitle' => $link['subtitle'],
+                    'url' => $link['url']
+                ];
+            } else {
+                $new_links[] = [
+                    'title' => $link['title'],
+                    'subtitle' => $link['subtitle'],
+                    'url' => $link['url']
+                ];
+            }
+        }
+
+
+        if (!empty($existing_links)) {
+            $update_sql = "UPDATE tbl_other_links SET link_title = :title, link_sub_title = :subtitle, link = :url WHERE id = :id AND business_info_id = :business_id";
+
+            $existing_ids = array_column($existing_links, 'id');
+
+            $placeholders = implode(',', array_fill(0, count($existing_ids), '?'));
+
+            $delete_sql = "DELETE FROM tbl_other_links WHERE business_info_id = ? AND id NOT IN ($placeholders)";
+
+            $delete_stmt = $conn->prepare($delete_sql);
+            $params = array_merge([$_POST['business_id']], $existing_ids);
+            $delete_stmt->execute($params);
+
+            $update_stmt = $conn->prepare($update_sql);
+
+            foreach ($existing_links as $link) {
+                $update_stmt->bindParam(':title', $link['title']);
+                $update_stmt->bindParam(':subtitle', $link['subtitle']);
+                $update_stmt->bindParam(':url', $link['url']);
+                $update_stmt->bindParam(':id', $link['id']);
+                $update_stmt->bindParam(':business_id', $_POST['business_id'], PDO::PARAM_INT);
+                $update_stmt->execute();
+            }
+        }
+
+        if (!empty($new_links)) {
+            $insert_sql = "INSERT INTO tbl_other_links (business_info_id, link_title, link_sub_title, link) VALUES (:business_id, :title, :subtitle, :url)";
+
+            $insert_stmt = $conn->prepare($insert_sql);
+
+            foreach ($new_links as $link) {
+                $insert_stmt->bindParam(':title', $link['title']);
+                $insert_stmt->bindParam(':subtitle', $link['subtitle']);
+                $insert_stmt->bindParam(':url', $link['url']);
+                $insert_stmt->bindParam(':business_id', $_POST['business_id'], PDO::PARAM_INT);
+                $insert_stmt->execute();
+            }
+        }
+
+        $_SESSION['success'] = "Business card updated successfully!";
+        echo "<script>window.location.href = 'show_cards.php';</script>";
     }
 }
 
@@ -382,6 +430,7 @@ if (isset($_GET['token'])) {
                                             ?>
                                                     <div class="input-group mb-2">
                                                         <input type="hidden" name="other_images_text[]" value="<?php echo $img_res['image']; ?>" readonly class="form-control image-input" accept="image/*">
+                                                        <input type="hidden" name="other_images_ids[]" value="<?php echo $img_res['id']; ?>" readonly class="form-control image-input" accept="image/*">
                                                         <img src="<?php echo BASE_URL . "assets/img/business_other/" . $img_res['image'] ?>" alt="Image <?php echo $id + 1; ?>" class="img-thumbnail" style="width: 100px; height: 100px;">
                                                         <button type="button" class="btn btn-danger" onclick="removeInput(this)">
                                                             <i class="bi bi-trash"></i>
@@ -404,34 +453,34 @@ if (isset($_GET['token'])) {
                                             $sel_other_links_stmt = $conn->prepare($sel_other_links_sql);
                                             $sel_other_links_stmt->bindParam(1, $business_id, PDO::PARAM_INT);
                                             $sel_other_links_stmt->execute();
-                                            $linkCounter = 0;
                                             while ($link_res = $sel_other_links_stmt->fetch(PDO::FETCH_ASSOC)) {
-                                                $linkCounter++;
-                                                $linkId = "link_$linkCounter";
                                                 $dbId = $link_res['id'];
+                                                $bytes = random_bytes(5);
+                                                $linkId = "link_" . bin2hex($bytes);
                                                 $title = $link_res['link_title'];
                                                 $subtitle = $link_res['link_sub_title'];
                                                 $url = $link_res['link'];
                                             ?>
                                                 <div class="mb-3 link-group" id="<?php echo $linkId; ?>" data-db-id="<?php echo $dbId; ?>">
                                                     <div class="d-flex justify-content-between align-items-center">
-                                                        <label>Link <?php echo $linkCounter; ?></label>
+                                                        <label>Default Link</label>
                                                         <button type="button" class="btn btn-sm btn-danger" onclick="removeLink('<?php echo $linkId; ?>')">
                                                             <i class="bi bi-trash"></i>
                                                         </button>
                                                     </div>
                                                     <input type="text" class="form-control mb-1 link-title"
-                                                        name="other_links[<?php echo $linkCounter; ?>][title]"
+                                                        name="other_links[<?php echo bin2hex($bytes); ?>][title]"
                                                         placeholder="Title"
                                                         value="<?php echo htmlspecialchars($title); ?>"
                                                         oninput="updateLinksPreview()">
+                                                    <input type="hidden" name="other_links[<?php echo bin2hex($bytes); ?>][link_id]" value="<?php echo $dbId; ?>">
                                                     <input type="text" class="form-control mb-1 link-subtitle"
-                                                        name="other_links[<?php echo $linkCounter; ?>][subtitle]"
+                                                        name="other_links[<?php echo bin2hex($bytes); ?>][subtitle]"
                                                         placeholder="Sub-title"
                                                         value="<?php echo htmlspecialchars($subtitle); ?>"
                                                         oninput="updateLinksPreview()">
                                                     <input type="url" class="form-control link-url"
-                                                        name="other_links[<?php echo $linkCounter; ?>][url]"
+                                                        name="other_links[<?php echo bin2hex($bytes); ?>][url]"
                                                         placeholder="http://example.com"
                                                         value="<?php echo htmlspecialchars($url); ?>"
                                                         oninput="updateLinksPreview()">
@@ -608,10 +657,10 @@ if (isset($_GET['token'])) {
         <script src="assets/js/business_card copy.js"></script>
 <?php
     } else {
-        // echo "<script>window.location.href = 'index.php';</script>";
+        echo "<script>window.location.href = 'index.php';</script>";
     }
 } else {
-    // echo "<script>window.location.href = 'index.php';</script>";
+    echo "<script>window.location.href = 'index.php';</script>";
 }
 ?>
 <?php

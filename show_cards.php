@@ -41,10 +41,11 @@ include('./includes/header.php');
                                                 echo '<th>User Name</th>';
                                             }
                                             ?>
-                                            <th>Status</th>
                                             <th>Logo</th>
                                             <th>Business Name</th>
                                             <th>Category</th>
+                                            <th>Status</th>
+                                            <th>Update Status</th>
                                             <th>Edit</th>
                                             <?php
                                             if ($_SESSION['role'] != '1') {
@@ -89,15 +90,6 @@ include('./includes/header.php');
                                                     ?>
                                                     <td>
                                                         <?php
-                                                        if ($card['bstatus'] == 1) {
-                                                            echo '<span class="badge badge-success">Active</span>';
-                                                        } else {
-                                                            echo '<span class="badge badge-danger">Inactive</span>';
-                                                        }
-                                                        ?>
-                                                    </td>
-                                                    <td>
-                                                        <?php
                                                         if (!empty($card['blogo'])) {
                                                             echo '<img src="' . $card['blogo'] . '" alt="' . htmlspecialchars($card['bname']) . '" width="50" height="50">';
                                                         } else {
@@ -107,6 +99,21 @@ include('./includes/header.php');
                                                     </td>
                                                     <td><?php echo htmlspecialchars($card['bname']); ?></td>
                                                     <td><?php echo htmlspecialchars($card['bcategory']); ?></td>
+                                                    <td>
+                                                        <?php
+                                                        if ($card['bstatus'] == 1) {
+                                                            echo '<span class="badge badge-success">Active</span>';
+                                                        } else {
+                                                            echo '<span class="badge badge-danger">Inactive</span>';
+                                                        }
+                                                        ?>
+                                                    </td>
+                                                    <td>
+                                                        <select class="form-control" data-id="<?php echo $card['btoken']; ?>" id="card_status" name="status">
+                                                            <option value="1" <?php if ($card['bstatus'] == 1) echo "selected";?>>Enable</option>
+                                                            <option value="0" <?php if ($card['bstatus'] == 0) echo "selected"?>>Disable</option>
+                                                        </select>
+                                                    </td>
                                                     <td><a href="./edit_card.php?token=<?php echo $card['btoken']; ?>" class="btn btn-primary"><i class="fa fa-edit me-2"></i></a></td>
                                                     <?php
                                                     if ($_SESSION['role'] != '1') {
@@ -179,5 +186,25 @@ include('./includes/footer.php');
         if (typeof feather !== 'undefined') {
             feather.replace();
         }
+    });
+
+    $(document).ready(function() {
+        $('#card_status').on('change', function() {
+            const status = $(this).val();
+            const token = $(this).data('id');
+            $.ajax({
+                url: 'ajax/update_card_status.php',
+                method: 'POST',
+                data: { status: status, token: token },
+                success: function(response) {
+                    window.location.reload();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error updating status:', error);
+                }
+            });
+
+            console.log('Status:', status, 'Token:', token);
+        });
     });
 </script>

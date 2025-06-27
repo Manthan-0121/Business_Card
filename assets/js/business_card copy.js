@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function () {
 function addImageInput() {
     const inputHtml = `
     <div class="input-group mb-2">
-        <input type="file" name="other_images[]" class="form-control image-input" accept="image/*">
+        <input type="file" name="slider_images[]" class="form-control image-input" accept="image/*">
         <button type="button" class="btn btn-danger" onclick="removeInput(this)">
             <i class="bi bi-trash"></i>
         </button>
@@ -143,7 +143,7 @@ function updateCarousel() {
     });
 
     // 2. Add newly uploaded files (from file inputs)
-    const fileInputs = document.querySelectorAll('input[name="other_images[]"]');
+    const fileInputs = document.querySelectorAll('input[name="slider_images[]"]');
     fileInputs.forEach((input, index) => {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
