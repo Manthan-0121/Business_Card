@@ -13,6 +13,15 @@ if ($_SESSION['role'] != "1") {
                     <div class="card">
                         <div class="card-header">
                             <h4>Business Category</h4>
+                            <?php
+                            if ($_SESSION['role'] == "1") {
+                            ?>
+                                <div class="card-header-action">
+                                    <a href="./create_business_category.php" class="btn btn-primary"><i class="fa fa-plus me-2"></i> Create</a>
+                                </div>
+                            <?php
+                            }
+                            ?>
                         </div>
                         <?php
                         if (isset($_SESSION['success'])) {

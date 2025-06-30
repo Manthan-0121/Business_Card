@@ -23,7 +23,7 @@ function business_name() {
     } else {
         business_name_r.innerHTML = business_name_l.value;
     }
-}    
+}
 
 //business about value change
 function business_about() {
@@ -119,10 +119,52 @@ function updateAddressPreview() {
 }
 
 
+// business address change
+function updateAddressPreview1() {
+    // Get all address input values
+    const address_line1 = document.getElementById("address_line1").value;
+    const address_line2 = document.getElementById("address_line2").value;
+    const city = document.getElementById("city").value;
+    const state = document.getElementById("state").value;
+    const country = document.getElementById("country").value;
+    const pincode = document.getElementById("pincode").value;
+
+    // Build the full address with line breaks
+    let fullAddress = '';
+
+    if (address_line1) fullAddress += address_line1 + '<br>';
+    if (address_line2) fullAddress += address_line2 + '<br>';
+
+    // Combine city and pincode if either exists
+    if (city || pincode) {
+        fullAddress += city || '';
+        if (city && pincode) fullAddress += ' - ';
+        if (pincode) fullAddress += pincode;
+        fullAddress += '<br>';
+    }
+
+    // Combine state and country if either exists
+    if (state || country) {
+        if (state && country) {
+            fullAddress += state + ', ' + country;
+        } else {
+            fullAddress += state || country;
+        }
+    }
+
+    // Set default if no address entered
+    if (!fullAddress.trim()) {
+        fullAddress = '123 rk road,<br>Shital park,<br>Rajkot - 360005<br>Gujarat, India';
+    }
+
+    // Update the preview element
+    const previewElement = document.getElementById("full_address");
+    if (previewElement) {
+        previewElement.innerHTML = fullAddress;
+    }
+}
+
 // business social links change
-
-
-
 
 //business add and remove image field  in below
 // function addImageInput() {

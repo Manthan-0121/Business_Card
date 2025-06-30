@@ -9,6 +9,15 @@ include('./includes/header.php');
                     <div class="card">
                         <div class="card-header">
                             <h4>Show Business Cards</h4>
+                            <?php
+                            if ($_SESSION['role'] != "1") {
+                            ?>
+                                <div class="card-header-action">
+                                    <a href="./create_card.php" class="btn btn-primary"><i class="fa fa-plus me-2"></i> Create</a>
+                                </div>
+                            <?php
+                            }
+                            ?>
                         </div>
                         <?php
                         if (isset($_SESSION['success'])) {
@@ -59,7 +68,7 @@ include('./includes/header.php');
                                     </thead>
                                     <tbody>
                                         <?php
-                                        $business_card_select_sql = "SELECT binfo.id AS bid, binfo.name AS bname, binfo.logo AS blogo, binfo.status AS bstatus, binfo.link_token AS btoken, bc.name AS bcategory";
+                                        $business_card_select_sql = "SELECT binfo.id AS bid,binfo.template_id as btemplate, binfo.name AS bname, binfo.logo AS blogo, binfo.status AS bstatus, binfo.link_token AS btoken, bc.name AS bcategory";
                                         if ($_SESSION['role'] == '1') {
                                             $business_card_select_sql .= ", tu.first_name AS bfname, tu.last_name AS bkname";
                                         }
@@ -110,11 +119,22 @@ include('./includes/header.php');
                                                     </td>
                                                     <td>
                                                         <select class="form-control" data-id="<?php echo $card['btoken']; ?>" id="card_status" name="status">
-                                                            <option value="1" <?php if ($card['bstatus'] == 1) echo "selected";?>>Enable</option>
-                                                            <option value="0" <?php if ($card['bstatus'] == 0) echo "selected"?>>Disable</option>
+                                                            <option value="1" <?php if ($card['bstatus'] == 1) echo "selected"; ?>>Enable</option>
+                                                            <option value="0" <?php if ($card['bstatus'] == 0) echo "selected"; ?>>Disable</option>
                                                         </select>
                                                     </td>
-                                                    <td><a href="./edit_card.php?token=<?php echo $card['btoken']; ?>" class="btn btn-primary"><i class="fa fa-edit me-2"></i></a></td>
+                                                    <td>
+                                                        <?php
+                                                            if($card['btemplate'] == 1) {
+                                                                ?>
+                                                                    <a href="./edit_card.php?token=<?php echo $card['btoken']; ?>" class="btn btn-primary"><i class="fa fa-edit me-2"></i></a></td>
+                                                                    <?php
+                                                            }else{
+                                                                ?>
+                                                                <a href="./edit_card_02.php?token=<?php echo $card['btoken']; ?>" class="btn btn-primary"><i class="fa fa-edit me-2"></i></a></td>
+                                                                <?php
+                                                            }
+                                                        ?>    
                                                     <?php
                                                     if ($_SESSION['role'] != '1') {
                                                     ?>
@@ -132,7 +152,19 @@ include('./includes/header.php');
                                                             <i class="fa fa-clipboard me-2"></i>
                                                         </button>
                                                     </td>
-                                                    <td><a href="<?php echo BASE_URL; ?>share/card.php?token=<?php echo $card['btoken']; ?>" target="_blank" class="btn btn-icon icon-left btn-success"><i class="fa fa-eye me-2"></i></a></td>
+                                                    <td>
+                                                        <?php
+                                                        if ($card['btemplate'] == 1) {
+                                                        ?>
+                                                            <a href="<?php echo BASE_URL; ?>share/card.php?token=<?php echo $card['btoken']; ?>" target="_blank" class="btn btn-icon icon-left btn-success"><i class="fa fa-eye me-2"></i></a>
+                                                    </td>
+                                                <?php
+                                                        } else {
+                                                ?>
+                                                    <a href="<?php echo BASE_URL; ?>share/card2.php?token=<?php echo $card['btoken']; ?>" target="_blank" class="btn btn-icon icon-left btn-success"><i class="fa fa-eye me-2"></i></a></td>
+                                                <?php
+                                                        }
+                                                ?>
                                                 </tr>
                                         <?php
                                             }
@@ -195,7 +227,10 @@ include('./includes/footer.php');
             $.ajax({
                 url: 'ajax/update_card_status.php',
                 method: 'POST',
-                data: { status: status, token: token },
+                data: {
+                    status: status,
+                    token: token
+                },
                 success: function(response) {
                     window.location.reload();
                 },

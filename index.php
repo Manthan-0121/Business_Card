@@ -31,10 +31,12 @@ $total_users = $stmt->fetch(PDO::FETCH_ASSOC);
                                 <div class="align-items-center justify-content-between">
                                     <div class="row ">
                                         <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
-                                            <div class="card-content">
-                                                <h5 class="font-15">Total Cards</h5>
-                                                <h2 class="mb-3 font-18"><?php echo $total_cards['tot_cards']; ?></h2>
-                                            </div>
+                                            <a href="show_cards.php" class="text-dark text-decoration-none">
+                                                <div class="card-content">
+                                                    <h5 class="font-15">Total Cards</h5>
+                                                    <h2 class="mb-3 font-18"><?php echo $total_cards['tot_cards']; ?></h2>
+                                                </div>
+                                            </a>
                                         </div>
                                         <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
                                             <div class="banner-img">
@@ -55,10 +57,12 @@ $total_users = $stmt->fetch(PDO::FETCH_ASSOC);
                                     <div class="align-items-center justify-content-between">
                                         <div class="row ">
                                             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
-                                                <div class="card-content">
-                                                    <h5 class="font-15"> Total Users</h5>
-                                                    <h2 class="mb-3 font-18"><?php echo $total_users['tot_users']; ?></h2>
-                                                </div>
+                                                <a href="show_users.php" class="text-dark text-decoration-none">
+                                                    <div class="card-content">
+                                                        <h5 class="font-15">Total Users</h5>
+                                                        <h2 class="mb-3 font-18"><?php echo $total_users['tot_users']; ?></h2>
+                                                    </div>
+                                                </a>
                                             </div>
                                             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
                                                 <div class="banner-img">

@@ -12,16 +12,7 @@ if ($_SESSION['role'] != "1") {
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <h4>Social Category</h4>
-                            <?php
-                            if ($_SESSION['role'] == "1") {
-                            ?>
-                                <div class="card-header-action">
-                                    <a href="./create_social_category.php" class="btn btn-primary"><i class="fa fa-plus me-2"></i> Create</a>
-                                </div>
-                            <?php
-                            }
-                            ?>
+                            <h4>Total Users</h4>
                         </div>
                         <?php
                         if (isset($_SESSION['success'])) {
@@ -47,40 +38,32 @@ if ($_SESSION['role'] != "1") {
                                         <tr>
                                             <th>#</th>
                                             <th>Name</th>
-                                            <th>Status</th>
-                                            <th>Created</th>
-                                            <th>Edit</th>
-                                            <th>Delete</th>
+                                            <th>Email</th>
+                                            <th>Mobile</th>
+                                            <th>Created Date</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <?php
-                                        $sel_sql = "SELECT * FROM tbl_social_category ORDER BY id DESC";
+                                        $sel_sql = "SELECT * FROM tbl_user WHERE role != '1' ORDER BY id DESC";
                                         $stmt = $conn->prepare($sel_sql);
                                         $stmt->execute();
                                         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         $i = 1;
                                         foreach ($result as $row) {
                                             $id = $row['id'];
-                                            $name = $row['platform_name'];
-                                            $status = $row['status'];
-                                            $created = date("d/m/Y", strtotime($row['created_at']));
+                                            $fname = $row['first_name'];
+                                            $lname = $row['last_name'];
+                                            $email = $row['email'];
+                                            $mobile = $row['mobile'];
+                                            $created = $row['created_at'];
                                         ?>
                                             <tr>
                                                 <td><?php echo $i++; ?></td>
-                                                <td><?php echo $name; ?></td>
-                                                <td>
-                                                    <?php
-                                                    if ($status == 1) {
-                                                        echo "<span class=\"badge badge-success\">Active</span>";
-                                                    } else {
-                                                        echo "<span class=\"badge badge-danger\">Inactive</span>";
-                                                    }
-                                                    ?>
-                                                </td>
+                                                <td><?php echo $fname . ' ' . $lname; ?></td>
+                                                <td><?php echo $email; ?></td>
+                                                <td><?php echo $mobile; ?></td>
                                                 <td><?php echo $created; ?></td>
-                                                <td><a href="edit_social_category.php?id=<?php echo $id; ?>" class="btn btn-sm btn-primary"><i data-feather="edit"></i></a></td>
-                                                <td><a href="delete_social_category.php?id=<?php echo $id; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this?')"><i data-feather="trash-2"></i></a></td>
                                             </tr>
                                         <?php
                                         }
