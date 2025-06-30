@@ -47,12 +47,19 @@ session_start();
                                         <div class="d-block">
                                             <label for="password" class="control-label">Password</label>
                                             <!-- <div class="float-right">
-                                                <a href="auth-forgot-password.html" class="text-small">
-                                                    Forgot Password?
-                                                </a>
-                                            </div> -->
+            <a href="auth-forgot-password.html" class="text-small">
+                Forgot Password?
+            </a>
+        </div> -->
                                         </div>
-                                        <input id="password" type="password" class="form-control" name="password" tabindex="2" required>
+                                        <div class="input-group">
+                                            <input id="password" type="password" class="form-control" name="password" tabindex="2" required>
+                                            <div class="input-group-append">
+                                                <button class="btn btn-outline-secondary toggle-password" type="button">
+                                                    <i class="fa fa-eye"></i>
+                                                </button>
+                                            </div>
+                                        </div>
                                         <div class="invalid-feedback">
                                             please fill in your password
                                         </div>
@@ -87,46 +94,60 @@ session_start();
     <script src="assets/js/scripts.js"></script>
     <!-- Custom JS File -->
     <script src="assets/js/custom.js"></script>
+    <script>
+        document.querySelector('.toggle-password').addEventListener('click', function() {
+            const passwordInput = document.querySelector('#password');
+            const icon = this.querySelector('i');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+    </script>
+    </script>
 </body>
 
 </html>
 
 <?php
-    include "./includes/config.php";
+include "./includes/config.php";
 
-    if($_SERVER['REQUEST_METHOD'] == 'POST'){
-        $email = $_POST['email'];
-        $password = md5($_POST['password']);
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $email = $_POST['email'];
+    $password = md5($_POST['password']);
 
-        $sel_sql = "SELECT * FROM tbl_user WHERE email = :email AND password = :pwd";
-        $stmt = $conn->prepare($sel_sql);
-        $stmt->bindParam(':email', $email);
-        $stmt->bindParam(':pwd', $password);
-        $stmt->execute();
-        $count = $stmt->rowCount();
+    $sel_sql = "SELECT * FROM tbl_user WHERE email = :email AND password = :pwd";
+    $stmt = $conn->prepare($sel_sql);
+    $stmt->bindParam(':email', $email);
+    $stmt->bindParam(':pwd', $password);
+    $stmt->execute();
+    $count = $stmt->rowCount();
 
-        if($count > 0){
-            $row_res = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            $_SESSION['uid'] = $row_res['id'];
-            $_SESSION['role'] = $row_res['role']; 
+    if ($count > 0) {
+        $row_res = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            echo "<script>
+        $_SESSION['uid'] = $row_res['id'];
+        $_SESSION['role'] = $row_res['role'];
+
+        echo "<script>
                 window.location.href = \"index.php\";
             </script>";
-        }else{
-            ?>
-            <script>
-                let not_found_msg = document.getElementById("not_found_msg");
+    } else {
+?>
+        <script>
+            let not_found_msg = document.getElementById("not_found_msg");
 
-                not_found_msg.innerHTML = `
+            not_found_msg.innerHTML = `
                         <div class="alert alert-danger alert-dismissible">
                             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
                             Invalid email or password.
                         </div>
                     `;
-            </script>
-            <?php
-        }
+        </script>
+<?php
     }
+}
 ?>
