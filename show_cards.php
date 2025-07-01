@@ -194,10 +194,11 @@ include('./includes/footer.php');
                 const button = e.target.closest('.copy-btn');
                 const token = button.getAttribute('data-id');
                 const templateId = button.getAttribute('data-template_id');
+                const full_url = "<?php echo BASE_URL;?>"
                 if (templateId == 1) {
-                    var shareUrl = `${window.location.origin}/Manthan/Project/Business_Card/share/card.php?token=${token}`;
+                    var shareUrl = full_url+`share/card.php?token=${token}`;
                 } else {
-                    var shareUrl = `${window.location.origin}/Manthan/Project/Business_Card/share/card2.php?token=${token}`;
+                    var shareUrl = full_url +`share/card2.php?token=${token}`;
                 }
 
                 navigator.clipboard.writeText(shareUrl)
