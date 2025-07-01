@@ -118,53 +118,54 @@ include('./includes/header.php');
                                                         ?>
                                                     </td>
                                                     <td>
-                                                        <select class="form-control" data-id="<?php echo $card['btoken']; ?>" id="card_status" name="status">
+                                                        <select class="form-control card_status" data-id="<?php echo $card['btoken']; ?>" name="status">
                                                             <option value="1" <?php if ($card['bstatus'] == 1) echo "selected"; ?>>Enable</option>
                                                             <option value="0" <?php if ($card['bstatus'] == 0) echo "selected"; ?>>Disable</option>
                                                         </select>
                                                     </td>
                                                     <td>
                                                         <?php
-                                                            if($card['btemplate'] == 1) {
-                                                                ?>
-                                                                    <a href="./edit_card.php?token=<?php echo $card['btoken']; ?>" class="btn btn-primary"><i class="fa fa-edit me-2"></i></a></td>
-                                                                    <?php
-                                                            }else{
-                                                                ?>
-                                                                <a href="./edit_card_02.php?token=<?php echo $card['btoken']; ?>" class="btn btn-primary"><i class="fa fa-edit me-2"></i></a></td>
-                                                                <?php
-                                                            }
-                                                        ?>    
-                                                    <?php
-                                                    if ($_SESSION['role'] != '1') {
-                                                    ?>
-                                                        <td><a href="./delete_card.php?token=<?php echo $card['btoken']; ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this card?')"
-                                                                title="Delete"><i class="fa fa-trash me-2"></i></a></td>
-                                                    <?php
-                                                    } ?>
-                                                    <td><a href="qr_generate.php?token=<?php echo $card['btoken']; ?>" target="_blank" class="btn btn-icon icon-left btn-info"><i class="fa fa-qrcode me-2"></i></a></td>
-                                                    <td>
-                                                        <button
-                                                            onclick=""
-                                                            class="btn btn-icon icon-left btn-warning copy-btn"
-                                                            data-id="<?php echo $card['btoken']; ?>"
-                                                            title="Copy Share Link">
-                                                            <i class="fa fa-clipboard me-2"></i>
-                                                        </button>
-                                                    </td>
-                                                    <td>
-                                                        <?php
                                                         if ($card['btemplate'] == 1) {
                                                         ?>
-                                                            <a href="<?php echo BASE_URL; ?>share/card.php?token=<?php echo $card['btoken']; ?>" target="_blank" class="btn btn-icon icon-left btn-success"><i class="fa fa-eye me-2"></i></a>
+                                                            <a href="./edit_card.php?token=<?php echo $card['btoken']; ?>" class="btn btn-primary"><i class="fa fa-edit me-2"></i></a>
                                                     </td>
                                                 <?php
                                                         } else {
                                                 ?>
-                                                    <a href="<?php echo BASE_URL; ?>share/card2.php?token=<?php echo $card['btoken']; ?>" target="_blank" class="btn btn-icon icon-left btn-success"><i class="fa fa-eye me-2"></i></a></td>
+                                                    <a href="./edit_card_02.php?token=<?php echo $card['btoken']; ?>" class="btn btn-primary"><i class="fa fa-edit me-2"></i></a></td>
                                                 <?php
                                                         }
                                                 ?>
+                                                <?php
+                                                if ($_SESSION['role'] != '1') {
+                                                ?>
+                                                    <td><a href="./delete_card.php?token=<?php echo $card['btoken']; ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this card?')"
+                                                            title="Delete"><i class="fa fa-trash me-2"></i></a></td>
+                                                <?php
+                                                } ?>
+                                                <td><a href="qr_generate.php?token=<?php echo $card['btoken']; ?>" target="_blank" class="btn btn-icon icon-left btn-info"><i class="fa fa-qrcode me-2"></i></a></td>
+                                                <td>
+                                                    <button
+                                                        onclick=""
+                                                        class="btn btn-icon icon-left btn-warning copy-btn"
+                                                        data-id="<?php echo $card['btoken']; ?>" data-template_id="<?php echo $card['btemplate']; ?>"
+                                                        title="Copy Share Link">
+                                                        <i class="fa fa-clipboard me-2"></i>
+                                                    </button>
+                                                </td>
+                                                <td>
+                                                    <?php
+                                                    if ($card['btemplate'] == 1) {
+                                                    ?>
+                                                        <a href="<?php echo BASE_URL; ?>share/card.php?token=<?php echo $card['btoken']; ?>" target="_blank" class="btn btn-icon icon-left btn-success"><i class="fa fa-eye me-2"></i></a>
+                                                </td>
+                                            <?php
+                                                    } else {
+                                            ?>
+                                                <a href="<?php echo BASE_URL; ?>share/card2.php?token=<?php echo $card['btoken']; ?>" target="_blank" class="btn btn-icon icon-left btn-success"><i class="fa fa-eye me-2"></i></a></td>
+                                            <?php
+                                                    }
+                                            ?>
                                                 </tr>
                                         <?php
                                             }
@@ -192,7 +193,12 @@ include('./includes/footer.php');
             if (e.target.closest('.copy-btn')) {
                 const button = e.target.closest('.copy-btn');
                 const token = button.getAttribute('data-id');
-                const shareUrl = `${window.location.origin}/Manthan/Project/Business_Card/share/card.php?token=${token}`;
+                const templateId = button.getAttribute('data-template_id');
+                if (templateId == 1) {
+                    var shareUrl = `${window.location.origin}/Manthan/Project/Business_Card/share/card.php?token=${token}`;
+                } else {
+                    var shareUrl = `${window.location.origin}/Manthan/Project/Business_Card/share/card2.php?token=${token}`;
+                }
 
                 navigator.clipboard.writeText(shareUrl)
                     .then(() => {
@@ -220,8 +226,11 @@ include('./includes/footer.php');
         }
     });
 
+    function card_status_update() {
+
+    }
     $(document).ready(function() {
-        $('#card_status').on('change', function() {
+        $('.card_status').on('change', function() {
             const status = $(this).val();
             const token = $(this).data('id');
             $.ajax({

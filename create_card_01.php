@@ -89,9 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    $business_info_insert_sql = "INSERT INTO tbl_business_info (`name`, `business_category_id`, `user_id`, `description`, `logo`, `contact_no`, `email`, `link_token`, `address_line_1`, `address_line_2`, `city`, `state`, `zip`, `country`,'template_id') VALUES (:name, :business_category_id, :user_id, :description, :logo, :contact_no, :email, :link_token, :address_line_1, :address_line_2, :city, :state, :zip, :country,:template_id)";
-
-    $template_id = 1;
+    $business_info_insert_sql = "INSERT INTO tbl_business_info (`name`, `business_category_id`, `user_id`, `description`, `logo`, `contact_no`, `email`, `link_token`, `address_line_1`, `address_line_2`, `city`, `state`, `zip`, `country`) VALUES (:name, :business_category_id, :user_id, :description, :logo, :contact_no, :email, :link_token, :address_line_1, :address_line_2, :city, :state, :zip, :country)";
 
     $stmt = $conn->prepare($business_info_insert_sql);
     $stmt->bindParam(':name', $name, PDO::PARAM_STR);
@@ -109,7 +107,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bindParam(':state', $state, PDO::PARAM_STR);
     $stmt->bindParam(':zip', $pincode, PDO::PARAM_STR);
     $stmt->bindParam(':country', $country, PDO::PARAM_STR);
-    $stmt->bindParam(':template_id', $template_id, PDO::PARAM_INT);
     if ($stmt->execute()) {
         $business_last_insert_id = $conn->lastInsertId();
         // $business_last_insert_id = 31; // For testing purposes, using a static ID
